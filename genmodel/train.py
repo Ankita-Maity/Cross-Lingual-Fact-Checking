@@ -2,12 +2,10 @@ from model.model import Summarizer
 from model.dataloader import DataModule
 from icecream import ic
 from collections import defaultdict
-
 import pytorch_lightning as pl
 # from pytorch_lightning.loggers import WandbLogger
 from pytorch_lightning.callbacks import ModelCheckpoint
 from pytorch_lightning.plugins import DDPPlugin
-
 import os
 import sys
 import glob
@@ -17,23 +15,18 @@ import argparse
 import pandas as pd
 # os.environ["WANDB_SILENT"] = "True"
 
-
 def main(args):
-
     train_path = args.train_path
     val_path = args.val_path
     test_path = args.test_path
-
     tokenizer_name_or_path = args.tokenizer
     model_name_or_path = args.model
     is_mt5 = args.is_mt5
     lr = args.learning_rate
-
     if args.config is not None:
         config = args.config
     else:
         config = model_name_or_path
-
     n_gpus = args.n_gpus
     strategy = args.strategy
     EXP_NAME = args.exp_name
@@ -46,14 +39,10 @@ def main(args):
     max_target_length = args.max_target_length
     beam_size = args.beam_size
     wb = args.wandb
-
     if wb:
         from pytorch_lightning.loggers import WandbLogger
         os.environ["WANDB_SILENT"] = "True"
-
-
     ic("Got all args")
-
     dm_hparams = dict(
         train_path=train_path,
         val_path=val_path,
@@ -67,10 +56,7 @@ def main(args):
         test_batch_size=test_batch_size,
     )
     dm = DataModule(**dm_hparams)
-
-
     ic("Created data module")
-
     model_hparams = dict(
         learning_rate=lr,
         model_name_or_path=model_name_or_path,
@@ -81,11 +67,8 @@ def main(args):
         tokenizer=dm.tokenizer,
         beam_size=beam_size
     )
-
     model = Summarizer(**model_hparams)
-
     ic("Created model")
-
     if args.sanity_run=='yes':
         log_model = False
         limit_train_batches = 4
@@ -96,7 +79,6 @@ def main(args):
         limit_train_batches = 1.0
         limit_val_batches = 1.0
         limit_test_batches = 1.0
-
     checkpoint_callback = ModelCheckpoint(monitor='val_loss', mode='min',
                                          dirpath=os.path.join(save_dir+EXP_NAME, 'lightning-checkpoints'),
                                         filename='{epoch}-{step}',
@@ -104,7 +86,6 @@ def main(args):
                                         verbose=True,
                                         save_last=False,
                                         save_weights_only=False)
-
     if wb:
         trainer_hparams = dict(
             gpus=n_gpus,
@@ -135,17 +116,13 @@ def main(args):
             limit_val_batches=limit_val_batches,
             limit_test_batches=limit_test_batches
         )
-
     ic("Started trainer")
     trainer = pl.Trainer(**trainer_hparams)
-
     # if old_checkpoint != "":
     #     model = model.load_from_checkpoint(old_checkpoint, fsa_dict=fsa_dict, reward_val=reward)
-
     trainer.fit(model, dm)
-
+    
 if __name__ == '__main__':
-
     parser = argparse.ArgumentParser(description='Input parameters for extractive stage')
     parser.add_argument('--n_gpus', default=1, type=int, help='number of gpus to use')
     parser.add_argument('--train_path', help='path to input json file for a given domain in given language')
@@ -170,7 +147,5 @@ if __name__ == '__main__':
     parser.add_argument('--beam_size', default=1)
     parser.add_argument('--wandb', default=1, type=int, help='to enable wandb loggings')
     parser.add_argument('--learning_rate', default=2e-5, type=float, help='learning rate used')
-
     args = parser.parse_args()
-
     main(args)
