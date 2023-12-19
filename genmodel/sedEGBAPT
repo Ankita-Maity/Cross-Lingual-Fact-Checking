@@ -1,144 +1,144 @@
 import os
-nkita
+
 import json
-nkita
+
 import argparse
-nkita
 
-nkita
+
+
 from tqdm import tqdm
-nkita
+
 from icecream import ic
-nkita
+
 from collections import defaultdict
-nkita
 
-nkita
 
-nkita
+
+
+
 def getFileNames(path):
-nkita
+
     names = [f for f in os.listdir(path)]
-nkita
+
     return names
-nkita
 
-nkita
 
-nkita
+
+
+
 def getFileData(path):
-nkita
+
     data = []
-nkita
+
     with open(path) as f:
-nkita
+
         try:
-nkita
+
             for line in f:
-nkita
+
                 data.append(json.loads(line))
-nkita
+
         except:
-nkita
+
             pass
-nkita
+
     return data
-nkita
 
-nkita
+
+
 def write(data, path):
-nkita
+
     f = open(path, 'w+')
-nkita
+
     for dic in data:
-nkita
+
         f.write(json.dumps(dic, ensure_ascii=False))
-nkita
+
         f.write('\n')
-nkita
 
-nkita
 
-nkita
+
+
+
 def main(args):
-nkita
 
-nkita
+
+
     data_path = args.data_path
-nkita
+
     output_path = args.output_path
-nkita
 
-nkita
+
+
     if not os.path.exists(output_path):
-nkita
+
         os.mkdir(output_path)
-nkita
 
-nkita
+
+
     fnames = getFileNames(data_path)
-nkita
+
     # dataset = defaultdict(list)
-nkita
+
     dataset = []
-nkita
 
-nkita
+
+
     for fn in tqdm(fnames):
-nkita
+
         path = f'{data_path}/{fn}'
-nkita
+
         data = getFileData(path)
-nkita
+
         new_data = []
-nkita
+
         for d in data:
-nkita
+
             new_data.append({
-nkita
+
                 'title': d['title'],
-nkita
+
                 'lang': fn[:2],
-nkita
+
                 'qid': d['qid'],
-nkita
+
                 'xalign_sent': d['xalign_sent'],
-nkita
+
                 'xalign_facts': d['xalign_facts']
-nkita
+
             })
-nkita
+
         # split = fn[3:-5]
-nkita
+
         # dataset[split].extend(new_data)
-nkita
+
         dataset.extend(new_data)
-nkita
+
     write(dataset, f'{output_path}/test.json')
-nkita
 
-nkita
+
+
     # write(dataset['train'], f'{output_path}/train.json')
-nkita
+
     # write(dataset['val'], f'{output_path}/val.json')
-nkita
+
     # write(dataset['test'], f'{output_path}/test.json')
-nkita
 
-nkita
+
+
 if __name__ == "__main__":
-nkita
 
-nkita
+
+
     parser = argparse.ArgumentParser()
-nkita
-    parser.add_argument('--data_path')
-nkita
-    parser.add_argument('--output_path')
-nkita
 
-nkita
+    parser.add_argument('--data_path')
+
+    parser.add_argument('--output_path')
+
+
+
     args = parser.parse_args()
-nkita
+
     main(args)
-nkita
+
