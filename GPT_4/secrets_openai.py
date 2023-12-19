@@ -1,2 +1,1 @@
 SECRET_KEY_OPENAI = ""
-
